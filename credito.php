@@ -27,7 +27,7 @@ if (isset($argv[1])) {
 function encryptCedula($cedula)
 {
     // Contenido de la clave pública
-    $public_key_file = "C:/xampp/htdocs/credito_api/PBKey.txt";
+    $public_key_file = "C:/xampp/htdocs/credito_express_api/PBKey.txt";
     // Lee el contenido del archivo PEM
     $public_key_content = file_get_contents($public_key_file);
     // Elimina espacios en blanco adicionales alrededor del contenido
@@ -166,7 +166,6 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
         return [0, "Error al procesar la solictud banco", $e->getMessage()];
     }
 }
-
 
 function Get_Secuencial_Api_Banco()
 {
