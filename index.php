@@ -77,13 +77,13 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
             )
         );
         $data_string = json_encode($data);
-        $url = 'http://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
+        $url = 'https://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
         $api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
         $ch = curl_init($url);
         // curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         // $verbose = fopen('php://temp', 'w+');
         curl_setopt($ch, CURLOPT_VERBOSE, true);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
