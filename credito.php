@@ -410,12 +410,12 @@ function ENVIAR_CORREO_CREDITO($credito_aprobado, $datos)
         $m->isSMTP();
         $m->SMTPAuth = true;
         $m->Host = 'mail.creditoexpres.com';
-        $m->Username = 'estadodecredito@creditoexpres.com';
+        $m->Username = 'info@creditoexpres.com';
         // $m->Password = 'izfq lqiv kbrc etsx';
         $m->Password = 'S@lvacero2024*';
         $m->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $m->Port = 465;
-        $m->setFrom('estadodecredito@creditoexpres.com', 'Credito Salvacero');
+        $m->setFrom('info@creditoexpres.com', 'Credito Salvacero');
         // $m->addAddress('jalvaradoe3@gmail.com');
         $m->addAddress($email);
         $m->isHTML(true);
