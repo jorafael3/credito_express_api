@@ -76,23 +76,14 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
                 "Celular" =>  $CELULAR
             )
         );
-
-        // echo json_encode($data);
-        // exit();
-        // Convertir datos a JSON
         $data_string = json_encode($data);
-        // URL del API
         $url = 'https://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
-        // API Key
-        $api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
-        // Inicializa la sesión cURL
+        $api_key = '';
         $ch = curl_init($url);
-
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        // Configura las opciones de la solicitud
         $verbose = fopen('php://temp', 'w+');
         curl_setopt($ch, CURLOPT_VERBOSE, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -101,16 +92,9 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
             'Content-Length: ' . strlen($data_string),
             'ApiKeySuscripcion: ' . $api_key
         ));
-        //curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
-
-        // Ejecuta la solicitud y obtiene la respuesta
         $response = (curl_exec($ch));
-        // Cierra la sesión cURL
         $error = (curl_error($ch));
         curl_close($ch);
-        // Imprime la respuesta
-        // echo $response;
-        // return [1, $ARRAY];
         rewind($verbose);
         $verboseLog = stream_get_contents($verbose);
         $response_array = json_decode($response, true);
