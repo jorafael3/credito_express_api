@@ -146,6 +146,7 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
     }
 }
 
-var_dump(encryptCedula("0931531115"));
+// var_dump(encryptCedula("0931531115"));
 
-// Obtener_Datos_Credito("0931531115", "19940412", "0969786231", "");
+Obtener_Datos_Credito("0931531115", "19940412", "0969786231", "");
+
