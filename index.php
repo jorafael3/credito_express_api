@@ -80,8 +80,8 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
         $url = 'https://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
         $api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $verbose = fopen('php://temp', 'w+');
+        // curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        // $verbose = fopen('php://temp', 'w+');
         curl_setopt($ch, CURLOPT_VERBOSE, true);
         // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
@@ -95,13 +95,13 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
         $response = (curl_exec($ch));
         $error = (curl_error($ch));
         curl_close($ch);
-        rewind($verbose);
-        $verboseLog = stream_get_contents($verbose);
+        // rewind($verbose);
+        // $verboseLog = stream_get_contents($verbose);
         $response_array = json_decode($response, true);
 
         var_dump($response_array);
         var_dump($error);
-        var_dump($verboseLog);
+        // var_dump($verboseLog);
 
         // if (extension_loaded('curl')) {
         //     echo "cURL está habilitado en este servidor.";
