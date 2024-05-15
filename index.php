@@ -52,7 +52,7 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
 
 
         // $SEC = Get_Secuencial_Api_Banco();
-        $SEC = intval(400) + 1;
+        $SEC = intval(500) + 1;
         // Update_Secuencial_Api_Banco($SEC);
 
         $cedula_ECrip = encryptCedula($cedula);
