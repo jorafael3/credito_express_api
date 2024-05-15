@@ -83,7 +83,7 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
         // curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         // $verbose = fopen('php://temp', 'w+');
         curl_setopt($ch, CURLOPT_VERBOSE, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
