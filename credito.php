@@ -148,9 +148,12 @@ function Obtener_Datos_Credito($cedula, $fecha, $celular, $ID_UNICO)
 
         // Verificar si hay un error en la respuesta
         if (isset($response_array['esError'])) {
-
-            $GUARDAR = Guardar_Datos_Banco($response_array, $ID_UNICO);
-            return [1, $response_array, $GUARDAR];
+            if ($response_array["esError"] == false) {
+                $GUARDAR = Guardar_Datos_Banco($response_array, $ID_UNICO);
+                return [1, $response_array, $GUARDAR];
+            } else {
+                return [0, $response_array];
+            }
         } else {
             // $INC = $this->INCIDENCIAS($_inci);
             return [0, $response_array, $data, $error, $verboseLog, extension_loaded('curl')];
@@ -403,7 +406,7 @@ function ENVIAR_CORREO_CREDITO($credito_aprobado, $datos)
 
             </body>
             </html>
-    ";
+            ";
 
         $m = new PHPMailer(true);
         $m->CharSet = 'UTF-8';
@@ -416,7 +419,7 @@ function ENVIAR_CORREO_CREDITO($credito_aprobado, $datos)
         $m->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $m->Port = 465;
         $m->setFrom('info@creditoexpres.com', 'Credito Salvacero');
-        // $m->addAddress('jalvaradoe3@gmail.com');
+        $m->addAddress('jalvaradoe3@gmail.com');
         $m->addAddress($email);
         $m->isHTML(true);
         $titulo = strtoupper('Estado del credito solicitado');
@@ -440,7 +443,8 @@ function ENVIAR_CORREO_CREDITO($credito_aprobado, $datos)
     }
 }
 
-function Get_Email($ID_UNICO){
+function Get_Email($ID_UNICO)
+{
     require('conexion.php');
 
     try {
