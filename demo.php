@@ -4,7 +4,15 @@
 if (isset($_GET["cedula"])) {
     $CEDULA = trim($_GET["cedula"]);
     if ($CEDULA != null || $CEDULA != "") {
+
+        $longitud = strlen($CEDULA);
+        // echo "La longitud del string es: " . $longitud;
+        if ($longitud == 9) {
+            $CEDULA = "0" . $CEDULA;
+        }
         Principal($CEDULA);
+
+
     } else {
         $res = array(
             "SUCCESS" => "0",
@@ -26,6 +34,7 @@ function Principal($CEDULA)
     if ($EN[0] == 1) {
         $ENCRY = $EN[1][0]["cedula_encrypt"];
         $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
+        $API[1]["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $API[1]["SOCIODEMOGRAFICO"][0]["CALLE"]." NUM ".$API[1]["SOCIODEMOGRAFICO"][0]["NUM"];
         echo json_encode($API[1]);
         exit();
     } else {
