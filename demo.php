@@ -11,8 +11,6 @@ if (isset($_GET["cedula"])) {
             $CEDULA = "0" . $CEDULA;
         }
         Principal($CEDULA);
-
-
     } else {
         $res = array(
             "SUCCESS" => "0",
@@ -34,7 +32,6 @@ function Principal($CEDULA)
     if ($EN[0] == 1) {
         $ENCRY = $EN[1][0]["cedula_encrypt"];
         $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
-        $API[1]["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $API[1]["SOCIODEMOGRAFICO"][0]["CALLE"]." NUM ".$API[1]["SOCIODEMOGRAFICO"][0]["NUM"];
         echo json_encode($API[1]);
         exit();
     } else {
@@ -127,6 +124,7 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
     try {
 
         $url = "https://consultadatos-dataconsulting.ngrok.app/api/ServicioMFC?clientId=" . trim($cedula_encr);
+        // $url = "http://161.97.88.203:7071/api/ServicioMFC?clientId=" . trim($cedula_encr);
 
         // Datos a enviar en la solicitud POST
         $data = [
@@ -159,6 +157,8 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
             return [0, curl_error($ch)];
         } else {
             $data = json_decode($response, true);
+            $data["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
+            $data["SOCIODEMOGRAFICO"][0]["CALLE_NUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
             return [1, $data];
         }
         // Cerrar cURL
