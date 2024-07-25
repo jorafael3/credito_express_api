@@ -61,6 +61,8 @@ function Guardar_Cedula($CEDULA)
     }
 }
 
+
+
 function OBTENER_ENCRIPT($CEDULA)
 {
     require('conexion.php');
