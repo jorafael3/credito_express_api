@@ -37,25 +37,45 @@ function Principal($CEDULA)
     // exit();
 
     if ($EN[0] == 1) {
-        $ENCRY = $EN[1][0]["cedula_encrypt"];
-        $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
+        $ENCRY = trim($EN[1][0]["cedula_encrypt"]);
+        $API = CONSULTA_API_REG_DEMOGRAFICO(trim($ENCRY));
+        // echo json_encode($ENCRY);
+        // exit();
         if ($API[0] == 1) {
+            $API[1]["CREDITO_SOLIDARIO"]  = [];
             $IDENTIFICACION = $API[1]["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
             $FECH_NAC = $API[1]["SOCIODEMOGRAFICO"][0]["FECH_NAC"];
             $date = DateTime::createFromFormat('d/m/Y', $FECH_NAC);
             $formattedDate = $date->format('Ymd');
-            $TelefonoCelularAfiliado = $API[1]["DEPENDIENTES"][0]["TelefonoCelularAfiliado"];
-            $SueldoPromedio = $API[1]["DEPENDIENTES"][0]["SueldoPromedio"];
+            if (count($API[1]["DEPENDIENTES"]) > 0) {
+                $TelefonoCelularAfiliado = $API[1]["DEPENDIENTES"][0]["TelefonoCelularAfiliado"];
+                $SueldoPromedio = $API[1]["DEPENDIENTES"][0]["SueldoPromedio"];
+            } else {
+                $TelefonoCelularAfiliado = $API[1]["INDEPENDIENTES"][0]["TELEFONO"];
+                $SueldoPromedio = "500";
+            }
 
             $API_EN = encryptCedula($CEDULA);
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
                 $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
+                if ($API_SOL[0] == 1) {
+                    $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    echo json_encode($API[1]);
+                    exit();
+                } else {
+                    $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    echo json_encode($API[1]);
+                    exit();
+                }
+            } else {
+                $API[1]["CREDITO_SOLIDARIO"] = [$API_EN[1]];
+                echo json_encode($API[1]);
+                exit();
             }
-
-
-
-            echo json_encode($IDENTIFICACION);
+        } else {
+            $API[1]["CREDITO_SOLIDARIO"] = [$API[1]];
+            echo json_encode($API[1]);
             exit();
         }
     } else {
@@ -284,7 +304,6 @@ function encryptCedula($cedula)
 function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
 {
     try {
-
         $fecha_formateada = $fecha;
         $ingresos = $sueldo;
         $Instruccion = "SECU";
@@ -335,8 +354,8 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
         // $verboseLog = stream_get_contents($verbose);
         $response_array = json_decode($response, true);
 
-        var_dump($response_array);
-        var_dump($error);
+        // var_dump($response_array);
+        // var_dump($error);
         // var_dump($verboseLog);
 
         // if (extension_loaded('curl')) {
@@ -346,14 +365,13 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
         // }
 
         // Verificar si hay un error en la respuesta
-        // if (isset($response_array['esError'])) {
-
-        //     $GUARDAR = Guardar_Datos_Banco($response_array, $ID_UNICO);
-        //     return [1, $response_array, $GUARDAR];
-        // } else {
-        //     // $INC = $this->INCIDENCIAS($_inci);
-        //     return [0, $response_array, $data, $error, $verboseLog, extension_loaded('curl')];
-        // }
+        if (isset($response_array['esError'])) {
+            // $GUARDAR = Guardar_Datos_Banco($response_array, $ID_UNICO);
+            return [1, $response_array];
+        } else {
+            // $INC = $this->INCIDENCIAS($_inci);
+            return [0, $response_array, $data, $error, extension_loaded('curl')];
+        }
     } catch (Exception $e) {
         // Captura la excepción y maneja el error
         // echo "Error: " . $e->getMessage();
