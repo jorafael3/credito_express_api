@@ -31,7 +31,7 @@ function Principal($CEDULA)
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
                 $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
-                $API_SOL = [1];
+                // $API_SOL = [1];
                 if ($API_SOL[0] == 1) {
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
                     echo json_encode($API[1]);
@@ -87,10 +87,10 @@ function _9pm($CEDULA)
             $API_EN = encryptCedula($CEDULA);
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
-               // $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
+                // $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
                 $API_SOL = [1];
                 if ($API_SOL[0] == 1) {
-                   // $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    // $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
                     return ($API[1]);
                 } else {
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
@@ -159,14 +159,14 @@ function OBTENER_ENCRIPT($CEDULA)
     require('conexion.php');
 
     try {
-        set_time_limit(180);
+        set_time_limit(300);
         $start_time = microtime(true);
 
         while (true) {
             $current_time = microtime(true);
             $elapsed_time = $current_time - $start_time;
             // Verificar si el tiempo transcurrido excede el límite de tiempo máximo permitido (por ejemplo, 120 segundos)
-            if (round($elapsed_time, 0) >= 180) {
+            if (round($elapsed_time, 0) >= 300) {
                 $_inci = array(
                     "ERROR_TYPE" => "API SOL 2",
                     "ERROR_CODE" => "API SOL MAX EXCECUTIN TIME",
@@ -252,6 +252,11 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
             $data = json_decode($response, true);
             $data["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
             $data["SOCIODEMOGRAFICO"][0]["CALLE_NUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
+
+            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PROVINCIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[0];
+            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_CIUDAD"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[1];
+            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PARROQUIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[2];
+
             return [1, $data];
         }
         // Cerrar cURL

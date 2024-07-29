@@ -11,14 +11,25 @@ function API()
     // $CEDULA = "0931531115";
     $CEDULAS = get_Cedula_9pm();
     $ARRAY_DATOS = [];
-    foreach ($CEDULAS as $row) {
-        $DATOS = _9pm($row["cedula"]);
-        // echo json_encode($DATOS);
-        array_push($ARRAY_DATOS, $DATOS);
+    if (count($CEDULAS) > 0) {
+        foreach ($CEDULAS as $row) {
+            $DATOS = _9pm($row["cedula"]);
+            // echo json_encode($DATOS);
+            array_push($ARRAY_DATOS, $DATOS);
+        }
+        echo json_encode($ARRAY_DATOS[1]);
+        exit();
+    } else {
+        $res = array(
+            "SUCCESS" => "0",
+            "MENSAJE" => "NO HAY REGISTROS PARA HACER CONSULTA"
+        );
+        echo json_encode($res);
+        exit();
     }
 
-    echo json_encode($ARRAY_DATOS[1]);
-    exit();
+
+
     // _9pm($CEDULA);
 }
 
