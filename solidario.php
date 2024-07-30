@@ -14,18 +14,19 @@ if (isset($_GET["cedula"])) {
         // Obtén la hora actual
         $currentDateTime = new DateTime();
         $currentHour = (int)$currentDateTime->format('H');
-        // Determina si la hora actual es mayor o igual a las 21:00 o menor o igual a las 6:00
-        if ($currentHour >= 21 || $currentHour <= 6) {
-            $res = array(
-                "SUCCESS" => "0",
-                "MENSAJE" => "SU CONSULTA SERA PROCESADA EN EL SIGUIENTE DIA HABIL5"
-            );
-            Guardar_Cedula_9pm($CEDULA);
-            echo json_encode($res);
-            exit();
-        } else {
-            Principal($CEDULA);
-        }
+
+        // if ($currentHour >= 21 || $currentHour <= 6) {
+        //     $res = array(
+        //         "SUCCESS" => "0",
+        //         "MENSAJE" => "SU CONSULTA SERA PROCESADA EN EL SIGUIENTE DIA HABIL"
+        //     );
+        //     Guardar_Cedula_9pm($CEDULA);
+        //     echo json_encode($res);
+        //     exit();
+        // } else {
+        //     Principal($CEDULA);
+        // }
+        Principal($CEDULA);
     } else {
         $res = array(
             "SUCCESS" => "0",
@@ -44,4 +45,3 @@ if (isset($_GET["cedula"])) {
     echo json_encode($res);
     exit();
 }
-
