@@ -16,6 +16,7 @@ function Principal($CEDULA, $NUMERO)
 {
     if (!validarCedulaEcuatoriana($CEDULA)) {
         $_inci = array(
+            "ERROR" => true,
             "ERROR_TYPE" => "CEDULA NO VALIDA",
             "ERROR_CODE" => "CEDULA ENVIADA:" . $CEDULA,
             "ERROR_TEXT" => "",
@@ -51,8 +52,8 @@ function Principal($CEDULA, $NUMERO)
             Generar_pdf($API[1]);
 
             $API_EN = encryptCedula($CEDULA);
-            echo json_encode($API[1]);
-            exit();
+            // echo json_encode($API[1]);
+            // exit();
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
                 $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
@@ -60,12 +61,27 @@ function Principal($CEDULA, $NUMERO)
                 if ($API_SOL[0] == 1) {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
-                    echo json_encode($API[1]);
-                    exit();
+
+                    if ($API_SOL[1]["esError"] == true) {
+
+                        $_inci = array(
+                            "ERROR" => true,
+                            "ERROR_TYPE" => "ERROR API SOLIDARIO",
+                            "ERROR_CODE" => "ERROR EN RESPUESTA DEL API, CEDULA ENVIADA:" . $CEDULA,
+                            "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
+                        );
+                        Enviar_correo_incidencias($_inci);
+                        echo json_encode($_inci);
+                        exit();
+                    } else {
+                        echo json_encode($API[1]);
+                        exit();
+                    }
                 } else {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
                     $_inci = array(
+                        "ERROR" => true,
                         "ERROR_TYPE" => "ERROR API SOLIDARIO",
                         "ERROR_CODE" => " CEDULA ENVIADA:" . $CEDULA,
                         "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
@@ -77,6 +93,7 @@ function Principal($CEDULA, $NUMERO)
             } else {
                 $API[1]["CREDITO_SOLIDARIO"] = [$API_EN[1]];
                 $_inci = array(
+                    "ERROR" => true,
                     "ERROR_TYPE" => "ERROR API SOL ENCRIPTACION",
                     "ERROR_CODE" => "CEDULA ENVIADA:" . $CEDULA,
                     "ERROR_TEXT" => json_encode($API_EN[1], JSON_UNESCAPED_UNICODE),
@@ -88,6 +105,7 @@ function Principal($CEDULA, $NUMERO)
         } else {
             // $API[1]["CREDITO_SOLIDARIO"] = [$API[1]];
             $_inci = array(
+                "ERROR" => true,
                 "ERROR_TYPE" => "ERROR API DEMOGRAFICO",
                 "ERROR_CODE" => "CEDULA NO VALIDA O LINK CAIDO,  CEDULA ENVIADA:" . $CEDULA,
                 "ERROR_TEXT" => json_encode($API[1], JSON_UNESCAPED_UNICODE),
@@ -98,6 +116,7 @@ function Principal($CEDULA, $NUMERO)
         }
     } else {
         $_inci = array(
+            "ERROR" => true,
             "ERROR_TYPE" => "ERROR OBTENER ENCRIPTACION",
             "ERROR_CODE" => "VERIFICAR AUTOMATICO DE ENCRIPTACION, CEDULA ENVIADA:" . $CEDULA,
             "ERROR_TEXT" => json_encode($EN[1], JSON_UNESCAPED_UNICODE),
@@ -202,8 +221,6 @@ function Guardar_Cedula_9pm($CEDULA)
         return [0, "INTENTE DE NUEVO"];
     }
 }
-
-
 
 function OBTENER_ENCRIPT($CEDULA)
 {

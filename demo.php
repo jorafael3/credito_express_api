@@ -3,32 +3,53 @@
 require('fpdf/fpdf.php');
 
 
-if (isset($_GET["cedula"]) && isset($_GET["numero"])) {
+if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"]) && isset($_GET["terminos"])) {
     $CEDULA = trim($_GET["cedula"]);
     $NUMERO = trim($_GET["numero"]);
-    if ($CEDULA != null || $CEDULA != "" || $NUMERO != null || $NUMERO != "") {
+    $TERMINOS = trim($_GET["terminos"]);
+    $key = trim($_GET["key"]);
+    $KEY = "7uXvhfOAUNbmfiKnzVlSq4uJRj0tx5G2";
 
-        $longitud = strlen($CEDULA);
-        $longitud_telefono = strlen($NUMERO);
+    if ($KEY == $key) {
+        if ($CEDULA != null || $CEDULA != "" || $NUMERO != null || $NUMERO != "") {
 
-        // echo "La longitud del string es: " . $longitud;
-        if ($longitud == 9) {
-            $CEDULA = "0" . $CEDULA;
+            $longitud = strlen($CEDULA);
+            $longitud_telefono = strlen($NUMERO);
+
+            // echo "La longitud del string es: " . $longitud;
+            if ($longitud == 9) {
+                $CEDULA = "0" . $CEDULA;
+            }
+            // if ($longitud == 9) {
+            //     $NUMERO = "0" . $NUMERO;
+            // }
+
+            Principal($CEDULA, $NUMERO);
+        } else {
+            $res = array(
+                "SUCCESS" => "0",
+                "MENSAJE" => "CEDULA NO VALIDA"
+            );
+
+            echo json_encode($res);
+            exit();
         }
-        if ($longitud == 9) {
-            $NUMERO = "0" . $NUMERO;
-        }
-
-        Principal($CEDULA, $NUMERO);
     } else {
         $res = array(
             "SUCCESS" => "0",
-            "MENSAJE" => "CEDULA NO VALIDA"
+            "MENSAJE" => "LOS PARAMETROS NO SON VALIDOS"
         );
-
         echo json_encode($res);
         exit();
     }
+} else {
+    $res = array(
+        "SUCCESS" => "0",
+        "MENSAJE" => "URL NO VALIDA, FALTAN PARAMETROS"
+    );
+
+    echo json_encode($res);
+    exit();
 }
 
 function Principal($CEDULA)
@@ -86,6 +107,7 @@ function OBTENER_ENCRIPT($CEDULA)
             // Verificar si el tiempo transcurrido excede el límite de tiempo máximo permitido (por ejemplo, 120 segundos)
             if (round($elapsed_time, 0) >= 180) {
                 $_inci = array(
+                    "ERROR" => true,
                     "ERROR_TYPE" => "API SOL 2",
                     "ERROR_CODE" => "API SOL MAX EXCECUTIN TIME",
                     "ERROR_TEXT" => "",
@@ -357,4 +379,3 @@ function getRealIP()
 
     return $_SERVER['REMOTE_ADDR'];
 }
-
