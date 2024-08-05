@@ -1,15 +1,24 @@
 <?php
 include 'funciones.php';
 
-if (isset($_GET["cedula"])) {
+if (isset($_GET["cedula"]) && isset($_GET["numero"])) {
     $CEDULA = trim($_GET["cedula"]);
-    if ($CEDULA != null || $CEDULA != "") {
+    $NUMERO = trim($_GET["numero"]);
+
+    if ($CEDULA != null || $CEDULA != "" || $NUMERO != null || $NUMERO != "") {
 
         $longitud = strlen($CEDULA);
+        $longitud_telefono = strlen($NUMERO);
+
         // echo "La longitud del string es: " . $longitud;
         if ($longitud == 9) {
             $CEDULA = "0" . $CEDULA;
         }
+
+        if ($longitud == 9) {
+            $NUMERO = "0" . $NUMERO;
+        }
+
         date_default_timezone_set('America/Guayaquil');
         // Obtén la hora actual
         $currentDateTime = new DateTime();
@@ -26,7 +35,7 @@ if (isset($_GET["cedula"])) {
         // } else {
         //     Principal($CEDULA);
         // }
-        Principal($CEDULA);
+        Principal($CEDULA, $NUMERO);
     } else {
         $res = array(
             "SUCCESS" => "0",
