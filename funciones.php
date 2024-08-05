@@ -418,6 +418,8 @@ function encryptCedula($cedula)
 
 function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
 {
+    ini_set('max_execution_time', '300'); // Tiempo en segundos
+
     try {
         $fecha_formateada = $fecha;
         $ingresos = $sueldo;
@@ -462,8 +464,8 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
             'Content-Length: ' . strlen($data_string),
             'ApiKeySuscripcion: ' . $api_key
         ));
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Máximo tiempo de espera total de 10 segundos
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20); // Máximo tiempo de espera para conectar de 5 segundos
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300); // Máximo tiempo de espera total de 10 segundos
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 180); // Máximo tiempo de espera para conectar de 5 segundos
 
 
         $response = (curl_exec($ch));
@@ -482,6 +484,12 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
         // Verificar si hay un error en la respuesta
         if (isset($response_array['esError'])) {
             // $GUARDAR = Guardar_Datos_Banco($response_array, $ID_UNICO);
+            if ($response_array['esError'] == false) {
+                if (isset($response_array['mensaje'])) {
+                    $response_array['montoMaximo'] = $response_array['mensaje']["montoMaximo"];
+                    $response_array['plazoMaximo'] = $response_array['mensaje']["plazoMaximo"];
+                }
+            }
             return [1, $response_array];
         } else {
             // $INC = $this->INCIDENCIAS($_inci);
@@ -506,7 +514,7 @@ function Enviar_correo_incidencias($DATOS_INCIDENCIA)
 
     try {
         $msg = "<div style='font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;'>";
-        $msg .= "<h1 style='text-align:center; color: #24448c;'>ERROR CREDITO EXPRESS INCIDENCIA</h1><br><br>";
+        $msg .= "<h1 style='text-align:center; color: #24448c;'>ERRORES API SOLIDARIO</h1><br><br>";
         $msg .= "<p>Fecha y hora de envío: " . date('d/m/Y H:i:s') . "</p>";
         $msg .= "<p>ERROR_TYPE: " . $DATOS_INCIDENCIA["ERROR_TYPE"] . "</p>";
         $msg .= "<p>ERROR_CODE: " . $DATOS_INCIDENCIA["ERROR_CODE"] . "</p>";
@@ -526,6 +534,8 @@ function Enviar_correo_incidencias($DATOS_INCIDENCIA)
         $m->Port = 465;
         $m->setFrom('info@creditoexpres.com', 'INCIDENCIAS');
         $m->addAddress('jalvaradoe3@gmail.com');
+        $m->addAddress('gerencia@salvacero.com');
+        $m->addAddress('marketing@salvacero.com');
         // $m->addAddress($email);
         $m->isHTML(true);
         $titulo = strtoupper('INCIDENCIAS');
