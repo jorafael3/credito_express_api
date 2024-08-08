@@ -25,7 +25,7 @@ if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"]) && i
             //     $NUMERO = "0" . $NUMERO;
             // }
 
-            Principal($CEDULA, $NUMERO);
+            Principal($CEDULA, $NUMERO, $TERMINOS);
         } else {
             $res = array(
                 "SUCCESS" => "0",
@@ -52,7 +52,7 @@ if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"]) && i
     exit();
 }
 
-function Principal($CEDULA)
+function Principal($CEDULA, $NUMERO, $TERMIMOS)
 {
     $C = Guardar_Cedula($CEDULA);
     $EN = OBTENER_ENCRIPT($CEDULA);
@@ -62,7 +62,9 @@ function Principal($CEDULA)
     if ($EN[0] == 1) {
         $ENCRY = $EN[1][0]["cedula_encrypt"];
         $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
-        Generar_pdf($API[1],trim($CEDULA));
+        if (trim($TERMIMOS) == "SPLENDOR") {
+            Generar_pdf($API[1], trim($CEDULA), $NUMERO);
+        }
         echo json_encode($API[1]);
         exit();
     } else {
@@ -208,7 +210,7 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
     }
 }
 
-function Generar_pdf($API,$CEDULA)
+function Generar_pdf($API, $CEDULA, $NUMERO)
 {
     $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
     $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
@@ -408,6 +410,10 @@ function Generar_pdf($API,$CEDULA)
     $pdf->Cell(0, 5, utf8_decode('      DIRECCIÓN IP: '), 0, 1, 'L');
     $pdf->SetFont('Arial', '', 10);
     $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode('      NUMERO: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6,  "      " . $NUMERO, 0, 1, 'L');
 
 
     $nombreArchivo = $CEDULA . "_" . $fecha . ".pdf"; // Nombre del archivo PDF
