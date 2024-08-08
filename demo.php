@@ -62,7 +62,7 @@ function Principal($CEDULA)
     if ($EN[0] == 1) {
         $ENCRY = $EN[1][0]["cedula_encrypt"];
         $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
-        Generar_pdf($API[1]);
+        Generar_pdf($API[1],trim($CEDULA));
         echo json_encode($API[1]);
         exit();
     } else {
@@ -208,7 +208,7 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
     }
 }
 
-function Generar_pdf($API)
+function Generar_pdf($API,$CEDULA)
 {
     $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
     $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
@@ -399,7 +399,7 @@ function Generar_pdf($API)
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->Cell(0, 5, '      CLIENTE: ', 0, 1, 'L');
     $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(0, 6, "      " . utf8_decode($nombre) . " - " . $cedula, 0, 1, 'L');
+    $pdf->Cell(0, 6, "      " . utf8_decode($nombre) . " - " . $CEDULA, 0, 1, 'L');
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->Cell(0, 5, "      " . utf8_decode('ACEPTÓ TERMINOS Y CONDICIONES: '), 0, 1, 'L');
     $pdf->SetFont('Arial', '', 10);
@@ -410,7 +410,7 @@ function Generar_pdf($API)
     $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
 
 
-    $nombreArchivo = $cedula . "_" . $fecha . ".pdf"; // Nombre del archivo PDF
+    $nombreArchivo = $CEDULA . "_" . $fecha . ".pdf"; // Nombre del archivo PDF
     $rutaCarpeta = 'docs/'; // Ruta de la carpeta donde se guardará el archivo (debes cambiar esto)
 
     if (chmod($rutaCarpeta, 0777)) {
