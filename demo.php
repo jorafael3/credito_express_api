@@ -62,8 +62,20 @@ function Principal($CEDULA, $NUMERO, $TERMIMOS)
     if ($EN[0] == 1) {
         $ENCRY = $EN[1][0]["cedula_encrypt"];
         $API = CONSULTA_API_REG_DEMOGRAFICO($ENCRY);
-        if (trim($TERMIMOS) == "SPLENDOR") {
-            Generar_pdf($API[1], trim($CEDULA), $NUMERO);
+
+        $ESPLENDOR = "SPLENDOR";
+        $HICAR = "HICAR";
+        $MISUPERS = "MISUPERS";
+
+
+        if (trim($TERMIMOS) == $ESPLENDOR) {
+            Generar_pdf_SPLENDOR($API[1], trim($CEDULA), $NUMERO, $ESPLENDOR);
+        }
+        if (trim($TERMIMOS) == $HICAR) {
+            Generar_pdf_HICARS($API[1], trim($CEDULA), $NUMERO, $HICAR);
+        }
+        if (trim($TERMIMOS) == $MISUPERS) {
+            Generar_pdf_MISUPERS($API[1], trim($CEDULA), $NUMERO, $MISUPERS);
         }
         echo json_encode($API[1]);
         exit();
@@ -210,7 +222,9 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
     }
 }
 
-function Generar_pdf($API, $CEDULA, $NUMERO)
+//** SPLENDOR ***/
+
+function Generar_pdf_SPLENDOR($API, $CEDULA, $NUMERO, $EMP)
 {
     $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
     $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
@@ -416,7 +430,223 @@ function Generar_pdf($API, $CEDULA, $NUMERO)
     $pdf->Cell(0, 6,  "      " . $NUMERO, 0, 1, 'L');
 
 
-    $nombreArchivo = $CEDULA . "_" . $fecha . ".pdf"; // Nombre del archivo PDF
+    $nombreArchivo = $CEDULA . "_" . $fecha . "_" . $EMP . ".pdf"; // Nombre del archivo PDF
+    $rutaCarpeta = 'docs/'; // Ruta de la carpeta donde se guardará el archivo (debes cambiar esto)
+
+    if (chmod($rutaCarpeta, 0777)) {
+        // echo "Permisos cambiados exitosamente.";
+    }
+    $pdf->Output($rutaCarpeta . $nombreArchivo, 'F');
+}
+
+//** HICAR */
+function Generar_pdf_HICARS($API, $CEDULA, $NUMERO, $EMP)
+{
+    $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
+    $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
+
+    // $fechaConsulta = new Date();
+    $ip = getRealIP();
+
+    $pdf = new PDF_HTML('P', 'mm', 'A4');
+    $pdf->AddPage();
+    $pdf->SetLeftMargin(15);
+    $pdf->SetRightMargin(15);
+    $pdf->SetAutoPageBreak(true, 15);
+    // Título
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 10, utf8_decode('AUTORIZACIÓN PARA EL TRATAMIENTO DE DATOS PERSONALES Y TÉRMINOS Y CONDICIONES'), 0, 1, 'C');
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        Declaro concurrir de manera libre y voluntaria a la aceptación del presente instrumento, y que no he sido
+        inducido/a a error, fuerza, dolo, temor reverencial o coerción alguna que pueda viciar mi consentimiento.  
+    ");
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 2, utf8_decode('I.'), 0, 1, 'C');
+    $pdf->Ln(3);
+    $pdf->Cell(0, 2, utf8_decode('AUTORIZACIÓN PARA EL TRATAMIENTO DE DATOS PERSONALES'), 0, 1, 'C');
+    $pdf->Ln(3);
+
+    // Contenido
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        Expreso mi consentimiento libre, específico, informado e inequívoco para proporcionar mis datos
+        personales y autorizo a la compañía SERVIMATERIALES S.A, con Registro Único de Contribuyentes (RUC)
+        Nro. 0992681845001, (En adelante Encargado del tratamiento) para que efectúe el tratamiento de los
+        mismos con las finalidades y en las formas establecidas en el presente instrumento.\n
+        1. TRATAMIENTO DE DATOS: Acepto y autorizo para que SERVIMATERIALES realice la recogida,
+        recopilación procesamiento, obtención, registro, organización, estructuración, conservación,
+        almacenamiento, consulta, adaptación, modificación, indexación, extracción, interconexión, utilización,
+        posesión, aprovechamiento, acceso, cesión, comunicación, verificación, elaboración de perfiles,
+        transferencia Y eliminación de mis datos personales.\n
+        Para tales efectos, acepto que SERVIMATERIALES podrá gestionar, obtener, cruzar y validar los datos
+        personales que he proporcionado con cualquier entidad pública y/o privada que se encuentre debidamente
+        facultada en el país, y, en especial, con la Dirección General de Registro Civil, Identificación y Cedulación,
+        la Dirección Nacional de Registros Públicos, así como de otras fuentes legales de información autorizadas
+        para operar en el país, de acceso público o a las que SERVIMATERIALES tenga legítimo acceso, y luego de
+        mi aceptación puedan ser registrados para el desarrollo legítimo de la relación jurídica o comercial.
+        Comprendo y acepto que mi información personal podrá ser almacenada de manera impresa o digital, y
+        accederán a ella los funcionarios de SERVIMATERIALES, estando obligados a cumplir con la legislación
+        aplicable a las políticas de confidencialidad y protección de datos.\n
+        2. FINALIDADES DEL TRATAMIENTO: Conozco y acepto que el tratamiento de mis datos tiene como
+        finalidad el procesamiento, análisis, generación de reportes demográficos y de estadísticas, estudios de
+        mercado y recepción de anuncios y/o publicidad respecto a los servicios y/o productos que consulte, a fin
+        de facilitar, promover, permitir o mantener relaciones con el Proveedor de dichos servicios y/o productos,
+        quien se considerará como Responsable del tratamiento de mmis datos personales. Consecuentemente,
+        reconozco que el Responsable del tratamiento de mis datos es SAVINGGROUP S.A.S., con RUC Nro.
+        0993346217001, a quien podré contactar al correo: gerenciacomercial@hicar.ec y/o al número telefónico:
+        +593 99 592 4374.\n
+        3. DATOS PERSONALES: Comprendo y autorizo que, para el cumplimiento del presente instrumento, se
+        me podrá solicitar la siguiente información personal: nombres y apellidos, número de identificación,
+        dirección de correo electrónico, número telefónico, estado civil, edad, fecha de nacimiento, nacionalidad,
+        idioma de origen, formación o instrucción académica, títulos profesionales, lugar de trabajo, cargo o
+        función desempeñado y datos sensibles como identidad de género, identidad cultural, condición migratoria
+        y datos relativos a salud. Como titular de dichos datos, conozco que no estoy obligado/a a aceptar la
+        presente autorización ni proporcionar dicha información a menos que requiera consultar y/o acceder a los
+        productos y/o servicios de mi interés.\n
+        4. DERECHOS: Declaro conocer los derechos que me asisten y que la normativa vigente prevé para acceder,
+        rectificar, actualizar, solicitar la eliminación, oponerme, dirigir quejas y recibir los datos personales que he
+        proporcionado y que se encuentren en tratamiento. Así mismo, declaro conocer que puedo revocar mi
+        consentimiento por escrito, en cualquier momento, sin que sea necesaria una justificación. Para tales fines,
+        podré remitir mi requerimiento al correo gerenciacomercial@hicar.ec en concordancia con los
+        procedimientos establecidos en la Ley Orgánica de Protección de Datos Personales (LOPDP) y su
+        Reglamento, así como las políticas internas de SERVIMATERIALES.\n
+        5. CONSERVACIÓN DE DATOS PERSONALES: SERVIMATERIALES conservará los datos personales durante
+        un tiempo no mayor al necesario para cumplir con las finalidades de su tratamiento y el que sea necesario
+        para el cumplimiento de disposiciones legales.\n
+        6. MEDIDAS DE SEGURIDAD Y CONFIDENCIALIDAD: Conozco que SERVIMATERIALES se compromete a
+        implementar y aplicar medidas técnicas y organizativas, adecuadas y necesarias, para la protección de mis
+        datos personales, y, especialmente, para evaluar, prevenir, impedir, mitigar y controlar riesgos, amenazas
+        y vulnerabilidades; obligación que se hace extensiva al Responsable del tratamiento, de conformidad con
+        la LOPDP. Reconozco y acepto que este compromiso no impedirá el tratamiento de mis datos personales
+        para las finalidades señaladas.\n
+        7. OTRAS DECLARACIONES: Declaro ser el titular de la información reportada; que el tratamiento de mis
+        datos personales es legítimo y lícito, el cual se fundamenta en mi consentimiento expreso, libre, específico,
+        informado e inequívoco; y, que las finalidades previstas en este instrumento para el tratamiento de sus
+        datos personales son determinadas, explícitas, legítimas y que me han sido debidamente comunicadas. De
+        igual manera declaro que los datos personales susceptibles a tratamiento son pertinentes y limitados al
+        cumplimiento de las finalidades previstas en este instrumento; que el tratamiento es adecuado, necesario,
+        oportuno, relevante, y no excesivo, para las finalidades señaladas; que todos los datos personales
+        proporcionados son correctos, exactos, íntegros, precisos, completos, comprobables y claros; y, que ha
+        sido informado/a acerca de mis derechos como titular y del ejercicio de los mismos.\n
+    ");
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    // $pdf->AddPage();
+
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 10, utf8_decode('II.'), 0, 1, 'C');
+    $pdf->Ln(3);
+    $pdf->Cell(0, 2, utf8_decode('TÉRMINOS Y CONDICIONES'), 0, 1, 'C');
+    $pdf->Ln(3);
+
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        1. DEFINICIÓN Y SERVICIOS: El Chatbot es un asistente virtual operado por SERVIMATERIALES S.A. (En
+        adelante SERVIMATERIALES) que permite al USUARIO la consulta de los productos y/o servicios ofertados
+        o ya contratados de SAVINGGROUP S.A.S., con RUC Nro. 0993346217001, en su calidad de PROVEEDOR. El
+        Chatbot no requiere ni procesa el pago de productos y/o servicios; por lo que el USUARIO se abstendrá de
+        enviar comprobantes de pago u otras transacciones a través del Chatbot. El uso y/o acceso al Chatbot por
+        parte del USUARIO no generará costo alguno de ninguna índole.\n
+        2. MANEJO DE LA INFORMACIÓN: Sin perjuicio de los datos personales expresados en la Sección I de este
+        instrumento, el Chatbot no solicita información como claves, números de cuentas que el USUARIO
+        mantenga en instituciones del Sistema Financiero Nacional, números de tarjetas de crédito o de débito,
+        reconocimiento facial, código dactilar, huellas u otros datos de carácter confidencial, personal, financiero
+        o crediticio del USUARIO. El USUARIO es el único responsable de la veracidad y exactitud de la información
+        proporcionada y se abstendrá de proporcionar información no requerida por Chatbot, de manera que
+        exime a Chatbot de cualquier responsabilidad contractual o extracontractual, así como de los daños y
+        perjuicios que se pudieren ocasionar por el envío de dicha información. No obstante, el Chatbot empleará 
+        las medidas técnicas de seguridad necesarias para la protección de la información proporcionada por el
+        USUARIO y evitar su divulgación y/o uso indebido.\n
+        3. CANALES Y HORARIOS: Chatbot funciona vía WHATSAPP®, redirigido desde anuncios en plataformas
+        publicitarias de las redes sociales habilitadas para el efecto hasta el momento como: Facebook, Instagram
+        y Tiktok. El Chatbot estará disponible las 24 horas del día, los siete días de la semana; no obstante, el
+        USUARIO reconoce que, dependiendo del horario en que se realicen las operaciones, estas podrán ser
+        procesadas el siguiente día hábil.\n
+        4. LÍMITES Y REFORMAS: SERVIMATERIALES podrá modificar los límites y condiciones de los servicios
+        brindados a través del Chatbot, como: número máximo de consultas, tiempo de conexión, tipo de consultas
+        u operaciones que podrán efectuarse, entre otros que SERVIMATERIALES determine. Dichos límites y
+        condiciones entrarán en vigencia y su aplicación será obligatoria para el USUARIO desde que le fueren
+        comunicados, a través del Chatbot u otros canales que, en su momento, estuvieren habilitados. Así mismo,
+        SERVIMATERIALES se reserva el derecho de modificar los términos y condiciones, los que serán efectivos
+        desde su aceptación por parte del USUARIO.\n
+        5. MANTENIMIENTO Y SOPORTE: SERVIMATERIALES será responsable del funcionamiento del Chatbot, de
+        acuerdo a los controles y resguardos físicos y tecnológicos para su uso seguro, considerando los riesgos
+        inherentes a su operatividad. Esta responsabilidad no comprende brindar mantenimiento a los dispositivos,
+        plataformas, sistemas, aplicaciones o redes desde las cuales opere el Chatbot.
+        6. PRIVACIDAD: SERVIMATERIALES empleará las medidas necesarias para proteger la integridad de la
+        información que le ha sido proporcionada, guardando la confidencialidad de la misma, evitando su
+        divulgación y/o mal uso a través de las normas técnicas de seguridad requeridas por la ley y según la
+        naturaleza de la información lo amerite. \n
+        7. LÍMITE DE RESPONSABILIDAD: SERVIMATERIALES no responderá por los daños o perjuicios, directos,
+        indirectos o de cualquier naturaleza que el USUARIO pudiera sufrir por las siguientes circunstancias: 7.1. Si
+        la consulta u operación requerida por el USUARIO no puede procesarse por no encuadrarse en los
+        parámetros prefijados por SERVIMATERIALES. En este sentido, el USUARIO reconoce que el Chatbot es un
+        software que ha sido programado por SERVIMATERIALES bajo cierto formato y parámetros
+        predeterminados; por lo que cualquier consulta u operación que no se encuadren en dicho formato y
+        parámetros, no serán procesados. 7.2. Por incompatibilidad del dispositivo usado por el USUARIO. 7.3. Por
+        virus, ataques cibernéticos, vulneraciones, filtraciones u otras intrusiones de seguridad que afecten la
+        plataforma de mensajería WHATSAPP®. 7.4. Por problemas o errores operativos o de conectividad de tal
+        plataforma o por restricciones impuestas por autoridades administrativas o judiciales para su
+        funcionamiento. 7.5. Por la sustracción, pérdida, deterioro o destrucción del dispositivo desde el cual se
+        accede al Chatbot. 7.6. Por la sustracción de información o ingreso de la misma por parte de terceros
+        diferentes al USUARIO, titular de dicha información. SERVIMATERIALES presume que el USUARIO que
+        realiza la consulta u operación es el titular de la información que proporciona y/o requiere o, en su defecto,
+        que ha sido expresamente autorizado por el titular de la misma para proporcionarla y/o para recibirla del
+        Chatbot. 7.7. Por la calidad del servicio de telefonía o de Internet utilizado para la conectividad y acceso al
+        Chatbot. 7.8. Por el uso o destino que el USUARIO dé a la información recibida u operaciones realizadas a
+        través del Chatbot. 7.9. Por la calidad, precios y atención respecto a los productos y/o servicios del
+        PROVEEDOR, ya que los mismos no son ofertados por SERVIMATERIALES. El USUARIO comprende y
+        reconoce que SERVIMATERIALES y el PROVEEDOR son personas jurídicas distintas y, por ende, no existe 
+        relación comercial o vinculación alguna entre ellas para la oferta de los productos y servicios que le
+        pertenecen al PROVEEDOR. La intervención de SERVIMATERIALES se limita única y exclusivamente a la
+        operatividad del Chatbot como medio para de realización de consultas y operaciones relacionadas a
+        productos y/o servicios de terceros. 7.10. Por cualquier otro hecho u actuación no imputable a
+        SERVIMATERIALES.\n
+        8. AUTORIZACIÓN: El USUARIO autoriza expresamente a SERVIMATERIALES a grabar, captar, registrar y/o
+        almacenar los datos y respuestas dadas en el Chatbot, así como las solicitudes, autorizaciones y, en general,
+        las instrucciones impartidas a través de tal medio y a reproducirlas y/o mostrarlas en la medida que sea
+        necesario aclarar, explicar, demostrar, probar y/o verificar sus actividades en el Chatbot, en especial, ante
+        cualquier autoridad fiscal o judicial.
+        Declaro haber leído y comprendido cada una de las cláusulas y demás declaraciones que constan en este
+        instrumento sobre la autorización y tratamiento de mis datos personales, así como sobre la operatividad
+        del Chatbot. Consecuentemente, con pleno conocimiento de las obligaciones y compromisos que me
+        corresponden, acepto el servicio Chatbot bajo los términos y condiciones que me han sido expuestos.\n
+    ");
+
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    date_default_timezone_set('America/Guayaquil');
+
+    $fechaConsulta = date('Y-m-d H:i:s');
+    $fecha = date('YmdHis');
+    // $fecha = DateTime::createFromFormat('YmdHis', $fechaConsulta);
+    // $fechaFormateada = $fecha->format('Y-m-d H:i A');
+    // Información del cliente
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, '      CLIENTE: ', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, "      " . utf8_decode($nombre) . " - " . $CEDULA, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, "      " . utf8_decode('ACEPTÓ TERMINOS Y CONDICIONES: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, "      " . $fechaConsulta, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode('      DIRECCIÓN IP: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode('      NUMERO: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6,  "      " . $NUMERO, 0, 1, 'L');
+
+
+    $nombreArchivo = $CEDULA . "_" . $fecha . "_" . $EMP . ".pdf"; // Nombre del archivo PDF
     $rutaCarpeta = 'docs/'; // Ruta de la carpeta donde se guardará el archivo (debes cambiar esto)
 
     if (chmod($rutaCarpeta, 0777)) {
@@ -448,7 +678,244 @@ function Generar_pdf($API, $CEDULA, $NUMERO)
     // }
 }
 
+function Generar_pdf_MISUPERS($API, $CEDULA, $NUMERO, $EMP)
+{
+    $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
+    $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
 
+    // $fechaConsulta = new Date();
+    $ip = getRealIP();
+
+    $pdf = new PDF_HTML('P', 'mm', 'A4');
+    $pdf->AddPage();
+    $pdf->SetLeftMargin(15);
+    $pdf->SetRightMargin(15);
+    $pdf->SetAutoPageBreak(true, 15);
+    // Título
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 10, utf8_decode('AUTORIZACIÓN PARA EL TRATAMIENTO DE DATOS PERSONALES Y TÉRMINOS Y CONDICIONES'), 0, 1, 'C');
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        Declaro concurrir de manera libre y voluntaria a la aceptación del presente instrumento, y que no he sido
+        inducido/a a error, fuerza, dolo, temor reverencial o coerción alguna que pueda viciar mi consentimiento.  
+    ");
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 2, utf8_decode('I.'), 0, 1, 'C');
+    $pdf->Ln(3);
+    $pdf->Cell(0, 2, utf8_decode('AUTORIZACIÓN PARA EL TRATAMIENTO DE DATOS PERSONALES'), 0, 1, 'C');
+    $pdf->Ln(3);
+
+    // Contenido
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        Expreso mi consentimiento libre, específico, informado e inequívoco para proporcionar mis datos
+        personales y autorizo a la compañía SERVIMATERIALES S.A, con Registro Único de Contribuyentes (RUC)
+        Nro. 0992681845001, (En adelante Encargado del tratamiento) para que efectúe el tratamiento de los
+        mismos con las finalidades y en las formas establecidas en el presente instrumento.\n
+        1. TRATAMIENTO DE DATOS: Acepto y autorizo para que SERVIMATERIALES realice la recogida,
+        recopilación procesamiento, obtención, registro, organización, estructuración, conservación,
+        almacenamiento, consulta, adaptación, modificación, indexación, extracción, interconexión, utilización,
+        posesión, aprovechamiento, acceso, cesión, comunicación, verificación, elaboración de perfiles,
+        transferencia Y eliminación de mis datos personales.\n
+        Para tales efectos, acepto que SERVIMATERIALES podrá gestionar, obtener, cruzar y validar los datos
+        personales que he proporcionado con cualquier entidad pública y/o privada que se encuentre debidamente
+        facultada en el país, y, en especial, con la Dirección General de Registro Civil, Identificación y Cedulación,
+        la Dirección Nacional de Registros Públicos, así como de otras fuentes legales de información autorizadas
+        para operar en el país, de acceso público o a las que SERVIMATERIALES tenga legítimo acceso, y luego de
+        mi aceptación puedan ser registrados para el desarrollo legítimo de la relación jurídica o comercial.
+        Comprendo y acepto que mi información personal podrá ser almacenada de manera impresa o digital, y
+        accederán a ella los funcionarios de SERVIMATERIALES, estando obligados a cumplir con la legislación
+        aplicable a las políticas de confidencialidad y protección de datos. \n
+        2. FINALIDADES DEL TRATAMIENTO: Conozco y acepto que el tratamiento de mis datos tiene como
+        finalidad el procesamiento, análisis, generación de reportes demográficos y de estadísticas, estudios de
+        mercado y recepción de anuncios y/o publicidad respecto a los servicios y/o productos que consulte, a fin
+        de facilitar, promover, permitir o mantener relaciones con el Proveedor de dichos servicios y/o productos,
+        quien se considerará como Responsable del tratamiento de mmis datos personales. Consecuentemente,
+        reconozco que el Responsable del tratamiento de mis datos es JANITRONECUADOR S.A., con RUC Nro.
+        0992873442001, a quien podré contactar al correo: proveedores@janitronecuador.com y/o al número
+        telefónico: +593 98 935 7913.\n
+        3. DATOS PERSONALES: Comprendo y autorizo que, para el cumplimiento del presente instrumento, se
+        me podrá solicitar la siguiente información personal: nombres y apellidos, número de identificación,
+        dirección de correo electrónico, número telefónico, estado civil, edad, fecha de nacimiento, nacionalidad,
+        idioma de origen, formación o instrucción académica, títulos profesionales, lugar de trabajo, cargo o
+        función desempeñado y datos sensibles como identidad de género, identidad cultural, condición migratoria
+        y datos relativos a salud. Como titular de dichos datos, conozco que no estoy obligado/a a aceptar la
+        presente autorización ni proporcionar dicha información a menos que requiera consultar y/o acceder a los
+        productos y/o servicios de mi interés. \n
+        4. DERECHOS: Declaro conocer los derechos que me asisten y que la normativa vigente prevé para acceder,
+        rectificar, actualizar, solicitar la eliminación, oponerme, dirigir quejas y recibir los datos personales que he
+        proporcionado y que se encuentren en tratamiento. Así mismo, declaro conocer que puedo revocar mi
+        consentimiento por escrito, en cualquier momento, sin que sea necesaria una justificación. Para tales fines,
+        podré remitir mi requerimiento al correo proveedores@janitronecuador.com en concordancia con los
+        procedimientos establecidos en la Ley Orgánica de Protección de Datos Personales (LOPDP) y su
+        Reglamento, así como las políticas internas de SERVIMATERIALES.\n
+        5. CONSERVACIÓN DE DATOS PERSONALES: SERVIMATERIALES conservará los datos personales durante
+        un tiempo no mayor al necesario para cumplir con las finalidades de su tratamiento y el que sea necesario
+        para el cumplimiento de disposiciones legales.\n
+        6. MEDIDAS DE SEGURIDAD Y CONFIDENCIALIDAD: Conozco que SERVIMATERIALES se compromete a
+        implementar y aplicar medidas técnicas y organizativas, adecuadas y necesarias, para la protección de mis
+        datos personales, y, especialmente, para evaluar, prevenir, impedir, mitigar y controlar riesgos, amenazas
+        y vulnerabilidades; obligación que se hace extensiva al Responsable del tratamiento, de conformidad con
+        la LOPDP. Reconozco y acepto que este compromiso no impedirá el tratamiento de mis datos personales
+        para las finalidades señaladas.\n
+        7. OTRAS DECLARACIONES: Declaro ser el titular de la información reportada; que el tratamiento de mis
+        datos personales es legítimo y lícito, el cual se fundamenta en mi consentimiento expreso, libre, específico,
+        informado e inequívoco; y, que las finalidades previstas en este instrumento para el tratamiento de sus
+        datos personales son determinadas, explícitas, legítimas y que me han sido debidamente comunicadas. De
+        igual manera declaro que los datos personales susceptibles a tratamiento son pertinentes y limitados al
+        cumplimiento de las finalidades previstas en este instrumento; que el tratamiento es adecuado, necesario,
+        oportuno, relevante, y no excesivo, para las finalidades señaladas; que todos los datos personales
+        proporcionados son correctos, exactos, íntegros, precisos, completos, comprobables y claros; y, que ha
+        sido informado/a acerca de mis derechos como titular y del ejercicio de los mismos.\n
+
+    ");
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    // $pdf->AddPage();
+
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 10, utf8_decode('II.'), 0, 1, 'C');
+    $pdf->Ln(3);
+    $pdf->Cell(0, 2, utf8_decode('TÉRMINOS Y CONDICIONES'), 0, 1, 'C');
+    $pdf->Ln(3);
+
+    $pdf->SetFont('Arial', '', 9);
+    $contenido = utf8_decode("
+        1. DEFINICIÓN Y SERVICIOS: El Chatbot es un asistente virtual operado por SERVIMATERIALES S.A. (En
+        adelante SERVIMATERIALES) que permite al USUARIO la consulta de los productos y/o servicios ofertados
+        o ya contratados de JANITRONECUADOR S.A., con RUC Nro. 0992873442001, en su calidad de PROVEEDOR.
+        El Chatbot no requiere ni procesa el pago de productos y/o servicios; por lo que el USUARIO se abstendrá
+        de enviar comprobantes de pago u otras transacciones a través del Chatbot. El uso y/o acceso al Chatbot
+        por parte del USUARIO no generará costo alguno de ninguna índole.\n
+        2. MANEJO DE LA INFORMACIÓN: Sin perjuicio de los datos personales expresados en la Sección I de este
+        instrumento, el Chatbot no solicita información como claves, números de cuentas que el USUARIO
+        mantenga en instituciones del Sistema Financiero Nacional, números de tarjetas de crédito o de débito,
+        reconocimiento facial, código dactilar, huellas u otros datos de carácter confidencial, personal, financiero
+        o crediticio del USUARIO. El USUARIO es el único responsable de la veracidad y exactitud de la información
+        proporcionada y se abstendrá de proporcionar información no requerida por Chatbot, de manera que
+        exime a Chatbot de cualquier responsabilidad contractual o extracontractual, así como de los daños y
+        perjuicios que se pudieren ocasionar por el envío de dicha información. No obstante, el Chatbot empleará
+        las medidas técnicas de seguridad necesarias para la protección de la información proporcionada por el
+        USUARIO y evitar su divulgación y/o uso indebido.\n
+        3. CANALES Y HORARIOS: Chatbot funciona vía WHATSAPP®, redirigido desde anuncios en plataformas
+        publicitarias de las redes sociales habilitadas para el efecto hasta el momento como: Facebook, Instagram
+        y Tiktok. El Chatbot estará disponible las 24 horas del día, los siete días de la semana; no obstante, el
+        USUARIO reconoce que, dependiendo del horario en que se realicen las operaciones, estas podrán ser
+        procesadas el siguiente día hábil.\n
+        4. LÍMITES Y REFORMAS: SERVIMATERIALES podrá modificar los límites y condiciones de los servicios
+        brindados a través del Chatbot, como: número máximo de consultas, tiempo de conexión, tipo de consultas
+        u operaciones que podrán efectuarse, entre otros que SERVIMATERIALES determine. Dichos límites y
+        condiciones entrarán en vigencia y su aplicación será obligatoria para el USUARIO desde que le fueren
+        comunicados, a través del Chatbot u otros canales que, en su momento, estuvieren habilitados. Así mismo,
+        SERVIMATERIALES se reserva el derecho de modificar los términos y condiciones, los que serán efectivos
+        desde su aceptación por parte del USUARIO.\n
+        5. MANTENIMIENTO Y SOPORTE: SERVIMATERIALES será responsable del funcionamiento del Chatbot, de
+        acuerdo a los controles y resguardos físicos y tecnológicos para su uso seguro, considerando los riesgos
+        inherentes a su operatividad. Esta responsabilidad no comprende brindar mantenimiento a los dispositivos,
+        plataformas, sistemas, aplicaciones o redes desde las cuales opere el Chatbot.
+        6. PRIVACIDAD: SERVIMATERIALES empleará las medidas necesarias para proteger la integridad de la
+        información que le ha sido proporcionada, guardando la confidencialidad de la misma, evitando su
+        divulgación y/o mal uso a través de las normas técnicas de seguridad requeridas por la ley y según la
+        naturaleza de la información lo amerite. \n
+        7. LÍMITE DE RESPONSABILIDAD: SERVIMATERIALES no responderá por los daños o perjuicios, directos,
+        indirectos o de cualquier naturaleza que el USUARIO pudiera sufrir por las siguientes circunstancias: 7.1. Si
+        la consulta u operación requerida por el USUARIO no puede procesarse por no encuadrarse en los
+        parámetros prefijados por SERVIMATERIALES. En este sentido, el USUARIO reconoce que el Chatbot es un
+        software que ha sido programado por SERVIMATERIALES bajo cierto formato y parámetros
+        predeterminados; por lo que cualquier consulta u operación que no se encuadren en dicho formato y
+        parámetros, no serán procesados. 7.2. Por incompatibilidad del dispositivo usado por el USUARIO. 7.3. Por
+        virus, ataques cibernéticos, vulneraciones, filtraciones u otras intrusiones de seguridad que afecten la
+        plataforma de mensajería WHATSAPP®. 7.4. Por problemas o errores operativos o de conectividad de tal
+        plataforma o por restricciones impuestas por autoridades administrativas o judiciales para su
+        funcionamiento. 7.5. Por la sustracción, pérdida, deterioro o destrucción del dispositivo desde el cual se
+        accede al Chatbot. 7.6. Por la sustracción de información o ingreso de la misma por parte de terceros
+        diferentes al USUARIO, titular de dicha información. SERVIMATERIALES presume que el USUARIO que
+        realiza la consulta u operación es el titular de la información que proporciona y/o requiere o, en su defecto,
+        que ha sido expresamente autorizado por el titular de la misma para proporcionarla y/o para recibirla del
+        Chatbot. 7.7. Por la calidad del servicio de telefonía o de Internet utilizado para la conectividad y acceso al
+        Chatbot. 7.8. Por el uso o destino que el USUARIO dé a la información recibida u operaciones realizadas a
+        través del Chatbot. 7.9. Por la calidad, precios y atención respecto a los productos y/o servicios del
+        PROVEEDOR, ya que los mismos no son ofertados por SERVIMATERIALES. El USUARIO comprende y
+        reconoce que SERVIMATERIALES y el PROVEEDOR son personas jurídicas distintas y, por ende, no existe
+        relación comercial o vinculación alguna entre ellas para la oferta de los productos y servicios que le
+        pertenecen al PROVEEDOR. La intervención de SERVIMATERIALES se limita única y exclusivamente a la
+        operatividad del Chatbot como medio para de realización de consultas y operaciones relacionadas a
+        productos y/o servicios de terceros. 7.10. Por cualquier otro hecho u actuación no imputable a
+        SERVIMATERIALES.\n
+        8. AUTORIZACIÓN: El USUARIO autoriza expresamente a SERVIMATERIALES a grabar, captar, registrar y/o
+        almacenar los datos y respuestas dadas en el Chatbot, así como las solicitudes, autorizaciones y, en general,
+        las instrucciones impartidas a través de tal medio y a reproducirlas y/o mostrarlas en la medida que sea
+        necesario aclarar, explicar, demostrar, probar y/o verificar sus actividades en el Chatbot, en especial, ante
+        cualquier autoridad fiscal o judicial.
+        Declaro haber leído y comprendido cada una de las cláusulas y demás declaraciones que constan en este
+        instrumento sobre la autorización y tratamiento de mis datos personales, así como sobre la operatividad
+        del Chatbot. Consecuentemente, con pleno conocimiento de las obligaciones y compromisos que me
+        corresponden, acepto el servicio Chatbot bajo los términos y condiciones que me han sido expuestos.\n
+    ");
+
+    $pdf->MultiCell(0, 4, $contenido);
+    $pdf->Ln(3);
+
+    date_default_timezone_set('America/Guayaquil');
+
+    $fechaConsulta = date('Y-m-d H:i:s');
+    $fecha = date('YmdHis');
+    // $fecha = DateTime::createFromFormat('YmdHis', $fechaConsulta);
+    // $fechaFormateada = $fecha->format('Y-m-d H:i A');
+    // Información del cliente
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, '      CLIENTE: ', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, "      " . utf8_decode($nombre) . " - " . $CEDULA, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, "      " . utf8_decode('ACEPTÓ TERMINOS Y CONDICIONES: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, "      " . $fechaConsulta, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode('      DIRECCIÓN IP: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode('      NUMERO: '), 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6,  "      " . $NUMERO, 0, 1, 'L');
+
+
+    $nombreArchivo = $CEDULA . "_" . $fecha . "_" . $EMP . ".pdf"; // Nombre del archivo PDF
+    $rutaCarpeta = 'docs/'; // Ruta de la carpeta donde se guardará el archivo (debes cambiar esto)
+
+    if (chmod($rutaCarpeta, 0777)) {
+        // echo "Permisos cambiados exitosamente.";
+    }
+
+    $pdf->Output($rutaCarpeta . $nombreArchivo, 'F');
+
+    // try {
+    //     $cedula = trim($param["cedula"]);
+    //     $query = $this->db->connect_dobra()->prepare('UPDATE creditos_solicitados
+    //     set ruta_archivo = :ruta_archivo
+    //     where cedula = :cedula
+    //     ');
+    //     $query->bindParam(":ruta_archivo", $nombreArchivo, PDO::PARAM_STR);
+    //     $query->bindParam(":cedula", $cedula, PDO::PARAM_STR);
+    //     if ($query->execute()) {
+    //         $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    //         echo json_encode(1);
+    //         exit();
+    //         // return 1;
+    //     } else {
+    //         // return 0;
+    //     }
+    // } catch (PDOException $e) {
+    //     $e = $e->getMessage();
+    //     echo json_encode($e);
+    //     exit();
+    // }
+}
 
 
 function getRealIP()
