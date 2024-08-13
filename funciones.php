@@ -798,6 +798,7 @@ function Guardar_Datos($CEDULA, $NUMERO, $DATOS, $ID_UNICO, $API)
 
     $IP = getRealIP();
     $DATOS = json_encode($DATOS);
+    $ARCHIVO = $ID_UNICO . ".pdf";
     // echo json_encode($DATOS);
     // exit();
     try {
@@ -808,14 +809,16 @@ function Guardar_Datos($CEDULA, $NUMERO, $DATOS, $ID_UNICO, $API)
             numero,
             ip,
             api,
-            datos
+            datos,
+            archivo
         )values(
             :id_unico,
             :cedula,
             :numero,
             :ip,
             :api,
-            :datos
+            :datos,
+            :archivo
         
         )");
         $query->bindParam(":id_unico", $ID_UNICO, PDO::PARAM_STR);
@@ -824,6 +827,7 @@ function Guardar_Datos($CEDULA, $NUMERO, $DATOS, $ID_UNICO, $API)
         $query->bindParam(":ip", $IP, PDO::PARAM_STR);
         $query->bindParam(":api", $API, PDO::PARAM_STR);
         $query->bindParam(":datos",  $DATOS, PDO::PARAM_STR);
+        $query->bindParam(":archivo",  $ARCHIVO, PDO::PARAM_STR);
 
 
         if ($query->execute()) {
