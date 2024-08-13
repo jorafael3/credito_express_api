@@ -12,7 +12,7 @@ require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 header('Content-Type: application/json; charset=UTF-8');
 
-function Principal($CEDULA, $NUMERO)
+function Principal($CEDULA, $NUMERO, $TIPO_API)
 {
     if (!validarCedulaEcuatoriana($CEDULA)) {
         $_inci = array(
@@ -25,6 +25,9 @@ function Principal($CEDULA, $NUMERO)
         echo json_encode($_inci);
         exit();
     }
+    date_default_timezone_set('America/Guayaquil');
+
+    $ID_UNICO = $CEDULA . "_" . date('YmdHis');
 
 
     $C = Guardar_Cedula($CEDULA);
@@ -49,34 +52,37 @@ function Principal($CEDULA, $NUMERO)
                 $SueldoPromedio = "500";
             }
 
-            Generar_pdf($API[1]);
+            Generar_pdf($API[1], $ID_UNICO);
 
             $API_EN = encryptCedula($CEDULA);
             // echo json_encode($API[1]);
             // exit();
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
-                $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
-                // $API_SOL = [1];
+                //$API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
+                $API_SOL = [1];
                 if ($API_SOL[0] == 1) {
 
-                    $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    // $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    Guardar_Datos($CEDULA, $NUMERO, $API[1], $ID_UNICO, $TIPO_API);
 
-                    if ($API_SOL[1]["esError"] == true) {
+                    echo json_encode($API[1]);
+                    exit();
+                    // if ($API_SOL[1]["esError"] == true) {
 
-                        $_inci = array(
-                            "ERROR" => true,
-                            "ERROR_TYPE" => "ERROR API SOLIDARIO",
-                            "ERROR_CODE" => "ERROR EN RESPUESTA DEL API, CEDULA ENVIADA:" . $CEDULA,
-                            "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
-                        );
-                        Enviar_correo_incidencias($_inci);
-                        echo json_encode($_inci);
-                        exit();
-                    } else {
-                        echo json_encode($API[1]);
-                        exit();
-                    }
+                    //     $_inci = array(
+                    //         "ERROR" => true,
+                    //         "ERROR_TYPE" => "ERROR API SOLIDARIO",
+                    //         "ERROR_CODE" => "ERROR EN RESPUESTA DEL API, CEDULA ENVIADA:" . $CEDULA,
+                    //         "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
+                    //     );
+                    //     Enviar_correo_incidencias($_inci);
+                    //     echo json_encode($_inci);
+                    //     exit();
+                    // } else {
+                    //     echo json_encode($API[1]);
+                    //     exit();
+                    // }
                 } else {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
@@ -612,7 +618,7 @@ function validarCedulaEcuatoriana($cedula)
     return $digitoVerificadorCalculado == $digitoVerificador;
 }
 
-function Generar_pdf($API)
+function Generar_pdf($API, $ID_UNICO)
 {
     $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
     $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
@@ -741,7 +747,7 @@ function Generar_pdf($API)
     $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
 
 
-    $nombreArchivo = $cedula . "_" . $fecha . ".pdf"; // Nombre del archivo PDF
+    $nombreArchivo = $ID_UNICO . ".pdf"; // Nombre del archivo PDF
     $rutaCarpeta = 'docs/'; // Ruta de la carpeta donde se guardará el archivo (debes cambiar esto)
 
     if (chmod($rutaCarpeta, 0777)) {
@@ -782,4 +788,50 @@ function getRealIP()
         return $_SERVER['HTTP_X_FORWARDED_FOR'];
 
     return $_SERVER['REMOTE_ADDR'];
+}
+
+
+
+function Guardar_Datos($CEDULA, $NUMERO, $DATOS, $ID_UNICO, $API)
+{
+    require('conexion.php');
+
+    $IP = getRealIP();
+    $DATOS = json_encode($DATOS);
+    // echo json_encode($DATOS);
+    // exit();
+    try {
+        $query = $pdo->prepare("INSERT INTO creditossolicitados
+        (
+            id_unico,
+            cedula,
+            numero,
+            ip,
+            api,
+            datos
+        )values(
+            :id_unico,
+            :cedula,
+            :numero,
+            :ip,
+            :api,
+            :datos
+        
+        )");
+        $query->bindParam(":id_unico", $ID_UNICO, PDO::PARAM_STR);
+        $query->bindParam(":cedula", $CEDULA, PDO::PARAM_STR);
+        $query->bindParam(":numero", $NUMERO, PDO::PARAM_STR);
+        $query->bindParam(":ip", $IP, PDO::PARAM_STR);
+        $query->bindParam(":api", $API, PDO::PARAM_STR);
+        $query->bindParam(":datos",  $DATOS, PDO::PARAM_STR);
+
+
+        if ($query->execute()) {
+            $result = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        }
+    } catch (PDOException $e) {
+        $e = $e->getMessage();
+        return [0, "INTENTE DE NUEVO"];
+    }
 }

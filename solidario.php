@@ -26,18 +26,18 @@ if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"])) {
             $currentDateTime = new DateTime();
             $currentHour = (int)$currentDateTime->format('H');
 
-            if ($currentHour >= 21 || $currentHour <= 6) {
-                $res = array(
-                    "SUCCESS" => "0",
-                    "MENSAJE" => "SU CONSULTA SERA PROCESADA EN EL SIGUIENTE DIA HABIL"
-                );
-                Guardar_Cedula_9pm($CEDULA);
-                echo json_encode($res);
-                exit();
-            } else {
-                Principal($CEDULA,$NUMERO);
-            }
-            // Principal($CEDULA);
+            // if ($currentHour >= 21 || $currentHour <= 6) {
+            //     $res = array(
+            //         "SUCCESS" => "0",
+            //         "MENSAJE" => "SU CONSULTA SERA PROCESADA EN EL SIGUIENTE DIA HABIL"
+            //     );
+            //     Guardar_Cedula_9pm($CEDULA);
+            //     echo json_encode($res);
+            //     exit();
+            // } else {
+            //     Principal($CEDULA, $NUMERO, "SOLIDARIO");
+            // }
+            Principal($CEDULA, $NUMERO, "SOLIDARIO");
         } else {
             $res = array(
                 "SUCCESS" => "0",
