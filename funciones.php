@@ -59,30 +59,29 @@ function Principal($CEDULA, $NUMERO, $TIPO_API)
             // exit();
             if ($API_EN[0] == 1) {
                 $cedula_ECrip = $API_EN[1];
-                //$API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
-                $API_SOL = [1];
+                $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
+                // $API_SOL = [1];
                 if ($API_SOL[0] == 1) {
 
-                    // $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
+                    $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
                     Guardar_Datos($CEDULA, $NUMERO, $API[1], $ID_UNICO, $TIPO_API);
 
-                    echo json_encode($API[1]);
-                    exit();
-                    // if ($API_SOL[1]["esError"] == true) {
-
-                    //     $_inci = array(
-                    //         "ERROR" => true,
-                    //         "ERROR_TYPE" => "ERROR API SOLIDARIO",
-                    //         "ERROR_CODE" => "ERROR EN RESPUESTA DEL API, CEDULA ENVIADA:" . $CEDULA,
-                    //         "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
-                    //     );
-                    //     Enviar_correo_incidencias($_inci);
-                    //     echo json_encode($_inci);
-                    //     exit();
-                    // } else {
-                    //     echo json_encode($API[1]);
-                    //     exit();
-                    // }
+                    // echo json_encode($API[1]);
+                    // exit();
+                    if ($API_SOL[1]["esError"] == true) {
+                        $_inci = array(
+                            "ERROR" => true,
+                            "ERROR_TYPE" => "ERROR API SOLIDARIO",
+                            "ERROR_CODE" => "ERROR EN RESPUESTA DEL API, CEDULA ENVIADA:" . $CEDULA,
+                            "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
+                        );
+                        Enviar_correo_incidencias($_inci);
+                        echo json_encode($_inci);
+                        exit();
+                    } else {
+                        echo json_encode($API[1]);
+                        exit();
+                    }
                 } else {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
@@ -511,9 +510,12 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
                 if (isset($response_array['mensaje'])) {
                     $response_array['montoMaximo'] = $response_array['mensaje']["montoMaximo"];
                     $response_array['plazoMaximo'] = $response_array['mensaje']["plazoMaximo"];
+                    $response_array['data'] = $data;
                 }
+            } else {
+                $response_array['data'] = $data;
             }
-            return [1, $response_array];
+            return [1, $response_array, $data];
         } else {
             // $INC = $this->INCIDENCIAS($_inci);
             return [0, $response_array, $data, $error, extension_loaded('curl')];
@@ -833,6 +835,9 @@ function Guardar_Datos($CEDULA, $NUMERO, $DATOS, $ID_UNICO, $API)
         if ($query->execute()) {
             $result = $query->fetchAll(PDO::FETCH_ASSOC);
             return $result;
+        } else {
+            $err = $query->errorInfo();
+            return $err;
         }
     } catch (PDOException $e) {
         $e = $e->getMessage();

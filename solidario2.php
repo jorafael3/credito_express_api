@@ -36,8 +36,10 @@ if (
 
             $ID_UNICO = $CEDULA . "_" . date('YmdHis');
 
-            $CEN = encrypt($CEDULA);
+            $CEN = encryptCedula($CEDULA);
             if ($CEN[0] == 1) {
+
+                // $DATOS_CREDITO = Obtener_Datos_Credito($CEN[1], $FECHA, $NUMERO, '500');
 
                 $DATOS_CREDITO  = Consulta_api($CEN[1], $NUMERO, $FECHA, $INGRESOS, $instr, $tipo);
                 $GUARDAR = Guardar_Datos($CEDULA, $NUMERO, [], $ID_UNICO, "SOLIDARIO");
@@ -127,7 +129,8 @@ function encrypt($cedula)
 function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $tipoIdentificacion)
 {
     ini_set('max_execution_time', '300'); // Tiempo en segundos
-
+    // echo json_encode("aquiaa");
+    // exit();
     try {
         $fecha_formateada = $fecha;
         $ingresos = $sueldo;
@@ -149,12 +152,12 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
             "secuencial" => $SEC,
             "mensaje" => array(
                 "IdCasaComercialProducto" => 8,
-                "TipoIdentificacion" =>  $TipoIdentificacion,
+                "TipoIdentificacion" =>  strval($TipoIdentificacion),
                 "IdentificacionCliente" => $cedula_ECrip, // Encriptar la cédula
-                "FechaNacimiento" => $fecha_formateada,
-                "ValorIngreso" => $ingresos,
-                "Instruccion" =>  $Instruccion,
-                "Celular" =>  $CELULAR
+                "FechaNacimiento" => strval($fecha_formateada),
+                "ValorIngreso" => strval($ingresos),
+                "Instruccion" =>  strval($Instruccion),
+                "Celular" =>  strval($CELULAR)
             )
         );
         $data_string = json_encode($data);
@@ -224,7 +227,7 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
             "ERROR_CODE" => "",
             "ERROR_TEXT" => $e->getMessage(),
         );
-        var_dump($param);
+        return [0, $param];
     }
 }
 
