@@ -161,8 +161,14 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
             )
         );
         $data_string = json_encode($data);
-        $url = 'https://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
+        // $url = 'https://bs-autentica.com/cco/apiofertaccoqa1/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
+        //$api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
+
+        $url = 'https://bs-autentica.com/cco/ApiOfertaCCO';
         $api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
+
+
+
         $ch = curl_init($url);
         // curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         // $verbose = fopen('php://temp', 'w+');
@@ -206,6 +212,7 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
                 if (isset($response_array['mensaje'])) {
                     $response_array['montoMaximo'] = $response_array['mensaje']["montoMaximo"];
                     $response_array['plazoMaximo'] = $response_array['mensaje']["plazoMaximo"];
+                    $response_array['datos'] = $data;
                 }
             }
             return [1, $response_array];
