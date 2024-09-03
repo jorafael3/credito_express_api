@@ -25,7 +25,6 @@ if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"])) {
             // Obtén la hora actual
             $currentDateTime = new DateTime();
             $currentHour = (int)$currentDateTime->format('H');
-
             // if ($currentHour >= 21 || $currentHour <= 6) {
             //     $res = array(
             //         "SUCCESS" => "0",
