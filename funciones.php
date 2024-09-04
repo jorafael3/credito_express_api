@@ -187,14 +187,17 @@ function _9pm($CEDULA)
 function Guardar_Cedula($CEDULA)
 {
     require('conexion.php');
+    $URL = "SOLIDARIO";
 
     try {
         $arr = "";
         $query = $pdo->prepare("INSERT INTO encript_agua
         (
-            cedula
-        )values(:cedula)");
+            cedula,
+            URL_CONSULTA 
+        )values(:cedula,URL_CONSULTA)");
         $query->bindParam(":cedula", $CEDULA, PDO::PARAM_STR);
+        $query->bindParam(":URL_CONSULTA", $URL, PDO::PARAM_STR);
         if ($query->execute()) {
             $result = $query->fetchAll(PDO::FETCH_ASSOC);
             return $result;
@@ -208,15 +211,19 @@ function Guardar_Cedula($CEDULA)
 function Guardar_Cedula_9pm($CEDULA)
 {
     require('conexion.php');
+    $URL = "SOLIDARIO";
 
     try {
         $arr = "";
         $query = $pdo->prepare("INSERT INTO encript_agua
         (
             cedula,
-            despues_9
-        )values(:cedula,1)");
+            despues_9,
+            URL_CONSULTA
+        )values(:cedula,1,:URL_CONSULTA)");
         $query->bindParam(":cedula", $CEDULA, PDO::PARAM_STR);
+        $query->bindParam(":URL_CONSULTA", $URL, PDO::PARAM_STR);
+
         if ($query->execute()) {
             $result = $query->fetchAll(PDO::FETCH_ASSOC);
             return $result;

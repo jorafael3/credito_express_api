@@ -54,8 +54,14 @@ if (isset($_GET["cedula"]) && isset($_GET["numero"]) && isset($_GET["key"]) && i
 
 function Principal($CEDULA, $NUMERO, $TERMIMOS)
 {
-    $C = Guardar_Cedula($CEDULA, $NUMERO, $TERMIMOS);
+    date_default_timezone_set('America/Guayaquil'); // Configurar la zona horaria a Guayaquil, Ecuador
+    $FECHA = date('YmdHis');
+    $ID_UNICO = $CEDULA . "_" . $FECHA;
+
+
+    $C = Guardar_Cedula($CEDULA, $NUMERO, $TERMIMOS, $ID_UNICO);
     $EN = OBTENER_ENCRIPT($CEDULA);
+
     // echo json_encode($EN);
     // exit();
 
@@ -68,19 +74,25 @@ function Principal($CEDULA, $NUMERO, $TERMIMOS)
         $MISUPERS = "MISUPERS";
         $LINEXPRES = "LINEXPRES";
 
+        if ($API[0] == 1) {
 
-        if (trim($TERMIMOS) == $ESPLENDOR) {
-            Generar_pdf_SPLENDOR($API[1], trim($CEDULA), $NUMERO, $ESPLENDOR);
+            if (trim($TERMIMOS) == $ESPLENDOR) {
+                Generar_pdf_SPLENDOR($API[1], trim($CEDULA), $NUMERO, $ESPLENDOR);
+            }
+            if (trim($TERMIMOS) == $HICAR) {
+                Generar_pdf_HICARS($API[1], trim($CEDULA), $NUMERO, $HICAR);
+            }
+            if (trim($TERMIMOS) == $MISUPERS) {
+                Generar_pdf_MISUPERS($API[1], trim($CEDULA), $NUMERO, $MISUPERS);
+            }
+            if (trim($TERMIMOS) == $LINEXPRES) {
+                Generar_pdf_MISUPERS($API[1], trim($CEDULA), $NUMERO, $LINEXPRES);
+            }
         }
-        if (trim($TERMIMOS) == $HICAR) {
-            Generar_pdf_HICARS($API[1], trim($CEDULA), $NUMERO, $HICAR);
-        }
-        if (trim($TERMIMOS) == $MISUPERS) {
-            Generar_pdf_MISUPERS($API[1], trim($CEDULA), $NUMERO, $MISUPERS);
-        }
-        if (trim($TERMIMOS) == $LINEXPRES) {
-            Generar_pdf_MISUPERS($API[1], trim($CEDULA), $NUMERO, $LINEXPRES);
-        }
+
+
+
+        Actualizar_DatosDemo([$API[1]], $ID_UNICO);
         echo json_encode($API[1]);
         exit();
     } else {
@@ -89,21 +101,54 @@ function Principal($CEDULA, $NUMERO, $TERMIMOS)
     }
 }
 
-function Guardar_Cedula($CEDULA, $NUMERO, $COMERCIO)
+function Guardar_Cedula($CEDULA, $NUMERO, $COMERCIO, $ID_UNICO)
 {
     require('conexion.php');
 
     try {
         $arr = "";
+        $URL = "DEMO";
+
         $query = $pdo->prepare("INSERT INTO encript_agua
         (
             cedula,
             numero,
-            comercio
-        )values(:cedula,:numero,:comercio)");
+            comercio,
+            ID_UNICO,
+            URL_CONSULTA
+        )values(:cedula,:numero,:comercio,:ID_UNICO,:URL_CONSULTA)");
         $query->bindParam(":cedula", $CEDULA, PDO::PARAM_STR);
         $query->bindParam(":numero", $NUMERO, PDO::PARAM_STR);
         $query->bindParam(":comercio", $COMERCIO, PDO::PARAM_STR);
+        $query->bindParam(":URL_CONSULTA", $URL, PDO::PARAM_STR);
+        $query->bindParam(":ID_UNICO", $ID_UNICO, PDO::PARAM_STR);
+
+
+        if ($query->execute()) {
+            $result = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        }
+    } catch (PDOException $e) {
+        $e = $e->getMessage();
+        return [0, "INTENTE DE NUEVO"];
+    }
+}
+
+function Actualizar_DatosDemo($DATOS, $ID_UNICO)
+{
+    require('conexion.php');
+
+    try {
+        $arr = "";
+        $DATOS = json_encode($DATOS);
+        $query = $pdo->prepare("UPDATE encript_agua
+        SET
+            datos = :datos
+        WHERE 
+            ID_UNICO = :ID_UNICO
+        ");
+        $query->bindParam(":datos", $DATOS, PDO::PARAM_STR);
+        $query->bindParam(":ID_UNICO", $ID_UNICO, PDO::PARAM_STR);
         if ($query->execute()) {
             $result = $query->fetchAll(PDO::FETCH_ASSOC);
             return $result;
@@ -212,15 +257,17 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
             return [0, curl_error($ch)];
         } else {
             $data = json_decode($response, true);
-            $data["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
-            $data["SOCIODEMOGRAFICO"][0]["CALLE_NUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
-
-            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PROVINCIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[0];
-            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_CIUDAD"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[1];
-            $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PARROQUIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[2];
-
-
-            return [1, $data];
+            if (isset($data["SOCIODEMOGRAFICO"])) {
+                $data["SOCIODEMOGRAFICO"][0]["CALLENUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
+                $data["SOCIODEMOGRAFICO"][0]["CALLE_NUM"] = $data["SOCIODEMOGRAFICO"][0]["CALLE"] . " NUM " . $data["SOCIODEMOGRAFICO"][0]["NUM"];
+                $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PROVINCIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[0];
+                $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_CIUDAD"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[1];
+                $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM_PARROQUIA"] = explode('/', $data["SOCIODEMOGRAFICO"][0]["LUGAR_DOM"])[2];
+                return [1, $data];
+            } else {
+                // $data = json_encode($data, JSON_UNESCAPED_UNICODE);
+                return [0, $data];
+            }
         }
         // Cerrar cURL
         curl_close($ch);
@@ -1163,7 +1210,6 @@ function Generar_pdf_LINEXPRES($API, $CEDULA, $NUMERO, $EMP)
     //     exit();
     // }
 }
-
 
 function getRealIP()
 {
