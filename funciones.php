@@ -64,7 +64,7 @@ function Principal($CEDULA, $NUMERO, $TIPO_API)
                 if ($API_SOL[0] == 1) {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
-                    Guardar_Datos($CEDULA, $NUMERO, $API[1], $ID_UNICO, $TIPO_API);
+                    Guardar_Datos($CEDULA, $NUMERO, [$API[1]], $ID_UNICO, $TIPO_API);
 
                     // echo json_encode($API[1]);
                     // exit();
