@@ -6,10 +6,18 @@ function Cargar()
 
     try {
         $con = 0;
-        $query = $pdo->prepare("SELECT * FROM encript_agua 
+
+        $SQL = "SELECT * FROM encript_agua 
         where URL_CONSULTA = 'DEMO' 
-        and ifnull(datos,'' = '')
-        LIMIT 100");
+        and ifnull(datos,'') = ''
+        LIMIT 100";
+
+        $SQL = "SELECT * FROM encript_agua 
+            where ifnull(datos,'') = ''
+            LIMIT 100";
+
+
+        $query = $pdo->prepare($SQL);
         if ($query->execute()) {
             $result = $query->fetchAll(PDO::FETCH_ASSOC);
 
