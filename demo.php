@@ -254,7 +254,7 @@ function CONSULTA_API_REG_DEMOGRAFICO($cedula_encr)
         // Manejar errores
         if (curl_errno($ch)) {
             // echo 'Error:' . curl_error($ch);
-            return [0, curl_error($ch)];
+            return [0, "Error de conexion consulta api", curl_error($ch)];
         } else {
             $data = json_decode($response, true);
             if (isset($data["SOCIODEMOGRAFICO"])) {
