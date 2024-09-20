@@ -165,6 +165,7 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
         //$api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
 
         // $url = 'https://bs-autentica.com/cco/ApiOfertaCCO';
+        $url = 'https://bs-autentica.com/cco/apiofertacco/api/CasasComerciales/GenerarCalificacionEnPuntaCasasComerciales';
         $api_key = '0G4uZTt8yVlhd33qfCn5sazR5rDgolqH64kUYiVM5rcuQbOFhQEADhMRHqumswphGtHt1yhptsg0zyxWibbYmjJOOTstDwBfPjkeuh6RITv32fnY8UxhU9j5tiXFrgVz';
 
 
@@ -184,7 +185,6 @@ function Consulta_api($cedula_ECrip, $celular, $fecha, $sueldo, $instruccion, $t
         ));
         curl_setopt($ch, CURLOPT_TIMEOUT, 300); // Máximo tiempo de espera total de 10 segundos
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 180); // Máximo tiempo de espera para conectar de 5 segundos
-
 
         $response = (curl_exec($ch));
         $error = (curl_error($ch));

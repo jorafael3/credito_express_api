@@ -41,6 +41,7 @@ function Principal($CEDULA, $NUMERO, $TIPO_API)
         if ($API[0] == 1) {
             $API[1]["CREDITO_SOLIDARIO"]  = [];
             $IDENTIFICACION = $API[1]["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
+            $API[1]["SOCIODEMOGRAFICO"][0]["NUMERO_CHAT"] = $NUMERO;
             $FECH_NAC = $API[1]["SOCIODEMOGRAFICO"][0]["FECH_NAC"];
             $date = DateTime::createFromFormat('d/m/Y', $FECH_NAC);
             $formattedDate = $date->format('Ymd');
@@ -61,7 +62,7 @@ function Principal($CEDULA, $NUMERO, $TIPO_API)
                 $cedula_ECrip = $API_EN[1];
                 $API_SOL = Obtener_Datos_Credito($cedula_ECrip, $formattedDate, $TelefonoCelularAfiliado, $SueldoPromedio);
                 // $API_SOL = [1];
-                if ($API_SOL[0] == 1) {
+                if ($API_SOL[0] == 0) {
 
                     $API[1]["CREDITO_SOLIDARIO"] = [$API_SOL[1]];
                     Guardar_Datos($CEDULA, $NUMERO, [$API[1]], $ID_UNICO, $TIPO_API);
@@ -76,7 +77,7 @@ function Principal($CEDULA, $NUMERO, $TIPO_API)
                             "ERROR_TEXT" => json_encode($API_SOL[1], JSON_UNESCAPED_UNICODE),
                         );
                         Enviar_correo_incidencias($_inci);
-                        echo json_encode($_inci);
+                        echo json_encode($API[1]);
                         exit();
                     } else {
                         echo json_encode($API[1]);
@@ -195,7 +196,7 @@ function Guardar_Cedula($CEDULA)
         (
             cedula,
             URL_CONSULTA 
-        )values(:cedula,URL_CONSULTA)");
+        )values(:cedula,:URL_CONSULTA)");
         $query->bindParam(":cedula", $CEDULA, PDO::PARAM_STR);
         $query->bindParam(":URL_CONSULTA", $URL, PDO::PARAM_STR);
         if ($query->execute()) {
@@ -517,11 +518,12 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
                 if (isset($response_array['mensaje'])) {
                     $response_array['montoMaximo'] = $response_array['mensaje']["montoMaximo"];
                     $response_array['plazoMaximo'] = $response_array['mensaje']["plazoMaximo"];
-                    $response_array['data'] = $data;
+                    // $response_array['data'] = $data;
                 }
-            } else {
-                $response_array['data'] = $data;
             }
+            // else {
+            //     $response_array['data'] = $data;
+            // }
             return [1, $response_array, $data];
         } else {
             // $INC = $this->INCIDENCIAS($_inci);
@@ -535,7 +537,7 @@ function Obtener_Datos_Credito($cedula_ECrip, $fecha, $celular, $sueldo)
             "ERROR_CODE" => "",
             "ERROR_TEXT" => $e->getMessage(),
         );
-        var_dump($param);
+        return [0, $param];
     }
 }
 
@@ -631,7 +633,8 @@ function Generar_pdf($API, $ID_UNICO)
 {
     $cedula = $API["SOCIODEMOGRAFICO"][0]["IDENTIFICACION"];
     $nombre = $API["SOCIODEMOGRAFICO"][0]["NOMBRE"];
-
+    $INDIVIDUAL_DACTILAR = $API["SOCIODEMOGRAFICO"][0]["INDIVIDUAL_DACTILAR"];
+    $NUMERO = $API["SOCIODEMOGRAFICO"][0]["NUMERO_CHAT"];
     // $fechaConsulta = new Date();
     $ip = getRealIP();
 
@@ -647,12 +650,11 @@ function Generar_pdf($API, $ID_UNICO)
     // Contenido
     $pdf->SetFont('Arial', '', 9);
     $contenido = utf8_decode("
-    Declaración de Capacidad legal y sobre la Aceptación:\n
     Por medio de la presente autorizo de manera libre, voluntaria, previa, informada e inequívoca a BANCO SOLIDARIO
     S.A. para que en los términos legalmente establecidos realice el tratamiento de mis datos personales como parte de
-    la relación precontractual, contractual y post contractual para: \n
+    la relación precontractual, contractual y post contractual para:\n
     El procesamiento, análisis, investigación, estadísticas, referencias y demás trámites para facilitar, promover, permitir
-    o mantener las relaciones con el BANCO. \n
+    o mantener las relaciones con el BANCO.\n
     Cuantas veces sean necesarias, gestione, obtenga y valide de cualquier entidad pública y/o privada que se encuentre
     facultada en el país, de forma expresa a la Dirección General de Registro Civil, Identificación y Cedulación, a la Dirección
     Nacional de Registros Públicos, al Servicio de Referencias Crediticias, a los burós de información crediticia, instituciones
@@ -666,22 +668,22 @@ function Generar_pdf($API, $ID_UNICO)
     generen en el futuro, sea como deudor principal, codeudor o garante, y en general, sobre el cumplimiento de mis
     obligaciones. Faculto expresamente al Banco para transferir o entregar a las mismas personas o entidades, la
     información relacionada con mi comportamiento crediticio. Esta expresa autorización la otorgo al Banco o a cualquier
-    cesionario o endosatario. \n
+    cesionario o endosatario.\n
     Tratar, transferir y/o entregar la información que se obtenga en virtud de esta solicitud incluida la relacionada con mi
     comportamiento crediticio y la que se genere durante la relación jurídica o comercial a autoridades competentes,
     terceros, socios comerciales y/o adquirientes de cartera, para el tratamiento de mis datos personales conforme los
     fines detallados en esta autorización o que me contacten por cualquier medio para ofrecerme los distintos servicios y
     productos que integran su portafolio y su gestión, relacionados o no con los servicios financieros del BANCO. En caso
     de que el BANCO ceda o transfiera cartera adeudada por mí, el cesionario o adquiriente de dicha cartera queda desde
-    ahora expresamente facultado para realizar las mismas actividades establecidas en esta autorización.\n
+    ahora expresamente facultado para realizar las mismas actividades establecidas en esta autorización.
     Entiendo y acepto que mi información personal podrá ser almacenada de manera impresa o digital, y accederán a ella
     los funcionarios de BANCO SOLIDARIO, estando obligados a cumplir con la legislación aplicable a las políticas de
     confidencialidad, protección de datos y sigilo bancario. En caso de que exista una negativa u oposición para el
     tratamiento de estos datos, no podré disfrutar de los servicios o funcionalidades que el BANCO ofrece y no podrá
     suministrarme productos, ni proveerme sus servicios o contactarme y en general cumplir con varias de las finalidades
-    descritas en la Política. \n
+    descritas en la Política.\n
     El BANCO conservará la información personal al menos durante el tiempo que dure la relación comercial y el que sea
-    necesario para cumplir con la normativa respectiva del sector relativa a la conservación de archivos. \n
+    necesario para cumplir con la normativa respectiva del sector relativa a la conservación de archivos.
     Declaro conocer que para el desarrollo de los propósitos previstos en el presente documento y para fines
     precontractuales, contractuales y post contractuales es indispensable el tratamiento de mis datos personales
     conforme a la Política disponible en la página web del BANCO www.banco-solidario.com/transparencia Asimismo,
@@ -689,11 +691,11 @@ function Generar_pdf($API, $ID_UNICO)
     información personal; así como, si no deseo continuar recibiendo información comercial y/o publicidad, deberé remitir
     mi requerimiento a través del proceso de atención de derechos ARSO+ en cualquier momento y sin costo alguno,
     utilizando la página web (www.banco-solidario.com), teléfono: 1700 765 432, comunicado escrito o en cualquiera de
-    las agencias del BANCO. \n
+    las agencias del BANCO.\n
     En virtud de que, para ciertos productos y servicios el BANCO requiere o solicita el tratamiento de datos personales
     de un tercero que como cliente podré facilitar, como por ejemplo referencias comerciales o de contacto, garantizo
     que, si proporciono datos personales de terceras personas, les he solicitado su aceptación e informado acerca de las
-    finalidades y la forma en la que el BANCO necesita tratar sus datos personales. \n
+    finalidades y la forma en la que el BANCO necesita tratar sus datos personales.
     Para la comunicación de sus datos personales se tomarán las medidas de seguridad adecuadas conforme la normativa
     vigente.\n
    
@@ -719,14 +721,14 @@ function Generar_pdf($API, $ID_UNICO)
     de perfiles, comunicación o transferencia y eliminación) de mis datos personales incluido el código dactilar con la
     finalidad de: consultar y/o aplicar a un producto y/o servicio financiero y ser sujeto de decisiones basadas única o
     parcialmente en valoraciones que sean producto de procesos automatizados, incluida la elaboración de perfiles. Esta
-    información será conservada por el plazo estipulado en la normativa aplicable. \n
+    información será conservada por el plazo estipulado en la normativa aplicable.\n
     Así mismo, declaro haber sido informado por el BANCO de los derechos con que cuento para conocer, actualizar y
     rectificar mi información personal, así como, los establecidos en el artículo 20 de la LOPDP y remitir mi requerimiento
     a través del proceso de atención de derechos ARSO+; en cualquier momento y sin costo alguno, utilizando la página
     web (www.banco-solidario.com), teléfono: 1700 765 432, comunicado escrito o en cualquiera de las agencias del
-    BANCO. \n
+    BANCO.\n
     Para proteger esta información conozco que el Banco cuenta con medidas técnicas y organizativas de seguridad
-    adaptadas a los riesgos como, por ejemplo: anonimización, cifrado, enmascarado y seudonimización. \n
+    adaptadas a los riesgos como, por ejemplo: anonimización, cifrado, enmascarado y seudonimización.\n
     Con la lectura de este documento manifiesto que he sido informado sobre el Tratamiento de mis Datos Personales, y
     otorgo mi autorización y aceptación de forma voluntaria y verídica. En señal de aceptación suscribo el presente
     documento. 
@@ -743,17 +745,17 @@ function Generar_pdf($API, $ID_UNICO)
     // $fechaFormateada = $fecha->format('Y-m-d H:i A');
     // Información del cliente
     $pdf->SetFont('Arial', 'B', 10);
-    $pdf->Cell(0, 5, '      CLIENTE: ', 0, 1, 'L');
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(0, 6, "      " . utf8_decode($nombre) . " - " . $cedula, 0, 1, 'L');
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->Cell(0, 5, "      " . utf8_decode('ACEPTÓ TERMINOS Y CONDICIONES: '), 0, 1, 'L');
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(0, 6, "      " . $fechaConsulta, 0, 1, 'L');
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->Cell(0, 5, utf8_decode('      DIRECCIÓN IP: '), 0, 1, 'L');
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
+    $pdf->Cell(0, 5, utf8_decode('CÉDULA:  ') . $cedula, 0, 1, 'L');
+    // $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, "NOMBRES COMPLETOS:  " . utf8_decode($nombre), 0, 1, 'L');
+    // $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, "CODIGO DACTILAR:  " . utf8_decode($INDIVIDUAL_DACTILAR), 0, 1, 'L');
+    // $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 6, utf8_decode("NÚMERO CELULAR:  ") . $NUMERO, 0, 1, 'L');
+    // $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(0, 5, utf8_decode("FECHA ACEPTÓ TÉRMINOS Y CONDICIONES:  ") . $fechaConsulta, 0, 1, 'L');
+    // $pdf->SetFont('Arial', '', 10);
+    // $pdf->Cell(0, 6,  "      " . $ip, 0, 1, 'L');
 
 
     $nombreArchivo = $ID_UNICO . ".pdf"; // Nombre del archivo PDF
